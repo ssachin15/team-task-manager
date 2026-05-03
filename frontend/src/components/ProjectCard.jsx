@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FolderKanban, Trash2 } from "lucide-react";
+import { useRBAC } from "../hooks/useRBAC";
 
 export default function ProjectCard({ project, onDelete }) {
   const navigate = useNavigate();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const { canDeleteProject } = useRBAC();
 
   const totalTasks = project.tasks?.length || project.tasks || 0;
   const completedTasks = Math.floor(totalTasks * 0.6);
@@ -77,14 +79,16 @@ export default function ProjectCard({ project, onDelete }) {
           </h2>
         </div>
 
-        {/* DELETE BUTTON */}
-        <button
-          onClick={handleDeleteClick}
-          className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all"
-          title="Delete project"
-        >
-          <Trash2 size={16} />
-        </button>
+        {/* DELETE BUTTON - Only visible if user can delete project */}
+         {canDeleteProject && (
+           <button
+             onClick={handleDeleteClick}
+             className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all"
+             title="Delete project"
+           >
+             <Trash2 size={16} />
+           </button>
+         )}
       </div>
 
       {/* DESCRIPTION */}

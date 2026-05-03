@@ -7,7 +7,7 @@ import {
   deleteTask,
   getDashboardStats
 } from '../controllers/taskController.js';
-import { protect } from '../middleware/auth.js';
+import { protect, checkTaskAccess, checkProjectOwnership } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -17,11 +17,11 @@ router.use(protect);
 // Dashboard stats (put this before /:id route to avoid conflict)
 router.get('/stats/dashboard', getDashboardStats);
 
-// Task CRUD
+// Task CRUD with RBAC middleware
 router.get('/', getTasks);
-router.post('/', createTask);
-router.get('/:id', getTask);
-router.put('/:id', updateTask);
-router.delete('/:id', deleteTask);
+router.post('/', checkProjectOwnership, createTask);
+router.get('/:id', checkTaskAccess, getTask);
+router.put('/:id', checkTaskAccess, updateTask);
+router.delete('/:id', checkTaskAccess, deleteTask);
 
 export default router;

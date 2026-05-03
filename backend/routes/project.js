@@ -8,7 +8,7 @@ import {
   addMember,
   removeMember
 } from '../controllers/projectController.js';
-import { protect } from '../middleware/auth.js';
+import { protect, checkProjectOwnership, checkProjectModifyAccess, checkMemberAddAccess } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -18,12 +18,12 @@ router.use(protect);
 // Project CRUD
 router.get('/', getProjects);
 router.post('/', createProject);
-router.get('/:id', getProject);
-router.put('/:id', updateProject);
-router.delete('/:id', deleteProject);
+router.get('/:id', checkProjectOwnership, getProject);
+router.put('/:id', checkProjectModifyAccess, updateProject);
+router.delete('/:id', checkProjectModifyAccess, deleteProject);
 
 // Member management
-router.post('/:id/members', addMember);
-router.delete('/:id/members/:memberId', removeMember);
+router.post('/:id/members', checkMemberAddAccess, addMember);
+router.delete('/:id/members/:memberId', checkProjectModifyAccess, removeMember);
 
 export default router;

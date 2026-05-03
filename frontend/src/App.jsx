@@ -7,6 +7,7 @@ import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import ProjectDetailsPage from "./pages/ProjectDetailsPage";
+import UnauthorizedPage from "./pages/UnauthorizedPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuth } from "./context/AuthContext";
 
@@ -60,13 +61,14 @@ export default function App() {
             }
           />
           <Route
-            path="/projects/:id"
-            element={
-              <ProtectedRoute>
-                <ProjectDetailsPage />
-              </ProtectedRoute>
-            }
-          />
+             path="/projects/:id"
+             element={
+               <ProtectedRoute>
+                 <ProjectDetailsPage />
+               </ProtectedRoute>
+             }
+           />
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
         </Routes>
       </div>
     </>

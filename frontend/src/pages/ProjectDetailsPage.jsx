@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Modal from "../components/Modal";
 import TaskCard from "../components/TaskCard";
 import API from "../services/api";
+import { useRBAC } from "../hooks/useRBAC";
 import { ClipboardList, Plus, ArrowLeft, Loader2, FolderKanban, AlertCircle } from "lucide-react";
 
 const STATUSES = ["To Do", "In Progress", "Completed"];
@@ -16,6 +17,7 @@ const columnStyles = {
 export default function ProjectDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { canCreateTask, canDeleteProject, canManageMembers } = useRBAC();
 
   const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
@@ -144,26 +146,28 @@ export default function ProjectDetailsPage() {
               <ArrowLeft size={14} /> Back to Projects
             </button>
 
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
-                  <FolderKanban size={28} className="text-white" />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-extrabold tracking-tight">{project?.name || `Project #${id}`}</h1>
-                  {project?.description && <p className="text-red-200 text-sm mt-0.5">{project.description}</p>}
-                  <p className="text-red-200 text-sm mt-1">{tasks.length} tasks · {completion}% complete</p>
-                </div>
-              </div>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+               <div className="flex items-center gap-4">
+                 <div className="w-14 h-14 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                   <FolderKanban size={28} className="text-white" />
+                 </div>
+                 <div>
+                   <h1 className="text-3xl font-extrabold tracking-tight">{project?.name || `Project #${id}`}</h1>
+                   {project?.description && <p className="text-red-200 text-sm mt-0.5">{project.description}</p>}
+                   <p className="text-red-200 text-sm mt-1">{tasks.length} tasks · {completion}% complete</p>
+                 </div>
+               </div>
 
-              <button
-                onClick={() => setIsOpen(true)}
-                className="flex items-center gap-2 bg-white text-red-800 font-semibold px-5 py-2.5 rounded-xl hover:bg-red-50 active:scale-[0.97] transition-all duration-200 shadow-md self-start md:self-auto"
-              >
-                <Plus size={18} />
-                Add Task
-              </button>
-            </div>
+               {canCreateTask && (
+                 <button
+                   onClick={() => setIsOpen(true)}
+                   className="flex items-center gap-2 bg-white text-red-800 font-semibold px-5 py-2.5 rounded-xl hover:bg-red-50 active:scale-[0.97] transition-all duration-200 shadow-md self-start md:self-auto"
+                 >
+                   <Plus size={18} />
+                   Add Task
+                 </button>
+               )}
+             </div>
 
             {/* Mini progress bar */}
             <div className="mt-5 w-full bg-white/20 h-1.5 rounded-full overflow-hidden">

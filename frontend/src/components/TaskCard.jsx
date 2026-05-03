@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Calendar, Trash2, ArrowRight, Flag } from "lucide-react";
+import { useRBAC } from "../hooks/useRBAC";
 
 const statusStyles = {
   "To Do":       "bg-gray-100 text-gray-600 border-gray-200",
@@ -16,6 +17,9 @@ const priorityStyles = {
 export default function TaskCard({ task, onStatusChange, onDelete }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const { canModifyTask } = useRBAC();
+
+  const canDelete = canModifyTask(task.createdBy?._id || task.createdBy);
 
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "Done";
 
@@ -72,13 +76,15 @@ export default function TaskCard({ task, onStatusChange, onDelete }) {
         </h3>
 
         {/* Delete button — visible on hover */}
-        <button
-          onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
-          className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-gray-300 hover:text-red-600 hover:bg-red-50 transition-all shrink-0 -mt-0.5"
-          title="Delete task"
-        >
-          <Trash2 size={14} />
-        </button>
+         {canDelete && (
+           <button
+             onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
+             className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-gray-300 hover:text-red-600 hover:bg-red-50 transition-all shrink-0 -mt-0.5"
+             title="Delete task"
+           >
+             <Trash2 size={14} />
+           </button>
+         )}
       </div>
 
       {/* DESCRIPTION */}

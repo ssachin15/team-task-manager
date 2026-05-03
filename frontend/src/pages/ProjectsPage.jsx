@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Modal from "../components/Modal";
 import ProjectCard from "../components/ProjectCard";
+import { useRBAC } from "../hooks/useRBAC";
 import { Search, FolderKanban, Plus, Loader2 } from "lucide-react";
 import API from "../services/api";
 
@@ -13,6 +14,7 @@ export default function ProjectsPage() {
   const [error, setError] = useState("");
   const [newProject, setNewProject] = useState({ name: "", description: "" });
   const [search, setSearch] = useState("");
+  const { isAdmin } = useRBAC();
 
   // Fetch projects from API on mount
   useEffect(() => {
@@ -74,25 +76,27 @@ export default function ProjectsPage() {
         <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-r from-red-900 via-red-800 to-red-700 p-8 text-white shadow-xl transition-all duration-700 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
           <div className="absolute -top-10 -right-10 w-52 h-52 bg-white/5 rounded-full blur-2xl" />
           <div className="absolute -bottom-14 -left-10 w-60 h-60 bg-black/10 rounded-full blur-3xl" />
-          <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
-                <FolderKanban size={28} className="text-white" />
-              </div>
-              <div>
-                <p className="text-red-200 text-sm font-medium">Your workspace</p>
-                <h1 className="text-3xl font-extrabold tracking-tight">Projects</h1>
-                <p className="text-red-200 text-sm mt-0.5">Manage all your projects in one place</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setIsOpen(true)}
-              className="flex items-center gap-2 bg-white text-red-800 font-semibold px-5 py-2.5 rounded-xl hover:bg-red-50 active:scale-[0.97] transition-all duration-200 shadow-md self-start md:self-auto"
-            >
-              <Plus size={18} />
-              New Project
-            </button>
-          </div>
+            <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+             <div className="flex items-center gap-4">
+               <div className="w-14 h-14 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                 <FolderKanban size={28} className="text-white" />
+               </div>
+               <div>
+                 <p className="text-red-200 text-sm font-medium">Your workspace</p>
+                 <h1 className="text-3xl font-extrabold tracking-tight">Projects</h1>
+                 <p className="text-red-200 text-sm mt-0.5">Manage all your projects in one place</p>
+               </div>
+             </div>
+             {isAdmin && (
+               <button
+                 onClick={() => setIsOpen(true)}
+                 className="flex items-center gap-2 bg-white text-red-800 font-semibold px-5 py-2.5 rounded-xl hover:bg-red-50 active:scale-[0.97] transition-all duration-200 shadow-md self-start md:self-auto"
+               >
+                 <Plus size={18} />
+                 New Project
+               </button>
+             )}
+           </div>
         </div>
 
         {/* ── SEARCH + STATS ── */}

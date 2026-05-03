@@ -4,14 +4,43 @@ import Project from '../models/Project.js';
 // @desc    Get all tasks for a project
 // @route   GET /api/tasks?projectId=:projectId
 // @access  Private
+// RBAC Rules:
+//  - Admin: can view all tasks
+//  - Owner: can view tasks in own projects
+//  - Member: can view tasks in assigned projects
+//  - Task Creator: can view own tasks
+//  - Assigned Member: can view assigned tasks
 export const getTasks = async (req, res) => {
   try {
-    // Accept both ?projectId= and ?project= for flexibility
     const projectRef = req.query.projectId || req.query.project;
+    const userId = req.user._id;
 
     let query = {};
-    if (projectRef) {
-      query.project = projectRef;
+
+    if (req.user.role === 'Admin') {
+      if (projectRef) {
+        query.project = projectRef;
+      }
+    } else {
+      const userProjects = await Project.find({
+        $or: [
+          { owner: userId },
+          { members: userId }
+        ]
+      }).select('_id');
+
+      if (projectRef) {
+        const hasAccess = userProjects.some(p => p._id.toString() === projectRef);
+        if (!hasAccess) {
+          return res.status(403).json({
+            success: false,
+            message: 'Not authorized to view tasks in this project'
+          });
+        }
+        query.project = projectRef;
+      } else {
+        query.project = { $in: userProjects.map(p => p._id) };
+      }
     }
 
     const tasks = await Task.find(query)
@@ -36,10 +65,16 @@ export const getTasks = async (req, res) => {
 // @desc    Get single task
 // @route   GET /api/tasks/:id
 // @access  Private
+// RBAC Rules:
+//  - Admin: can view any task
+//  - Owner: can view tasks in own projects
+//  - Member: can view tasks in assigned projects
+//  - Task Creator: can view own tasks
+//  - Assigned Member: can view assigned tasks
 export const getTask = async (req, res) => {
   try {
     const task = await Task.findById(req.params.id)
-      .populate('project', 'name')
+      .populate('project', 'name owner members')
       .populate('assignedTo', 'name email')
       .populate('createdBy', 'name email');
 
@@ -47,6 +82,13 @@ export const getTask = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Task not found'
+      });
+    }
+
+    if (!req.task) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to view this task'
       });
     }
 
@@ -65,9 +107,12 @@ export const getTask = async (req, res) => {
 // @desc    Create task
 // @route   POST /api/tasks
 // @access  Private
+// RBAC Rules:
+//  - Admin: can create tasks in any project
+//  - Owner: can create tasks in own projects
+//  - Member: can create tasks in assigned projects
 export const createTask = async (req, res) => {
   try {
-    // Accept both 'project' and 'projectId' from body
     const projectRef = req.body.projectId || req.body.project;
     const { title, description, assignedTo, priority, dueDate, status } = req.body;
 
@@ -78,7 +123,6 @@ export const createTask = async (req, res) => {
       });
     }
 
-    // Check if project exists
     const project = await Project.findById(projectRef);
     if (!project) {
       return res.status(404).json({
@@ -87,7 +131,6 @@ export const createTask = async (req, res) => {
       });
     }
 
-    // Check authorization
     const isOwnerOrMember =
       project.owner.toString() === req.user._id.toString() ||
       project.members.some(m => m.toString() === req.user._id.toString());
@@ -103,7 +146,6 @@ export const createTask = async (req, res) => {
       title,
       description,
       project: projectRef,
-      // Default assignee to the creator if not provided
       assignedTo: assignedTo || req.user._id,
       createdBy: req.user._id,
       priority: priority || 'Medium',
@@ -129,12 +171,18 @@ export const createTask = async (req, res) => {
   }
 };
 
-// @desc    Update task
+// @desc    Update task (with granular RBAC)
 // @route   PUT /api/tasks/:id
 // @access  Private
+// RBAC Rules:
+//  - Admin: can update any task
+//  - Project Owner: can update any task in own projects
+//  - Task Creator: can update title, description, status of own tasks
+//  - Assigned Member: can ONLY update status of assigned tasks
+//  - Others: no access
 export const updateTask = async (req, res) => {
   try {
-    let task = await Task.findById(req.params.id);
+    let task = await Task.findById(req.params.id).populate('project', 'owner members');
 
     if (!task) {
       return res.status(404).json({
@@ -143,13 +191,7 @@ export const updateTask = async (req, res) => {
       });
     }
 
-    // Check if user is creator, assigned to, or admin
-    const isAuthorized = 
-      task.createdBy.toString() === req.user._id.toString() ||
-      task.assignedTo.toString() === req.user._id.toString() ||
-      req.user.role === 'Admin';
-
-    if (!isAuthorized) {
+    if (!req.task) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to update this task'
@@ -183,9 +225,14 @@ export const updateTask = async (req, res) => {
   }
 };
 
-// @desc    Delete task
+// @desc    Delete task (with RBAC)
 // @route   DELETE /api/tasks/:id
 // @access  Private
+// RBAC Rules:
+//  - Admin: can delete any task
+//  - Project Owner: can delete any task in own projects
+//  - Task Creator: can delete own tasks
+//  - Assigned Member: CANNOT delete
 export const deleteTask = async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
@@ -197,12 +244,7 @@ export const deleteTask = async (req, res) => {
       });
     }
 
-    // Check authorization
-    const isAuthorized = 
-      task.createdBy.toString() === req.user._id.toString() ||
-      req.user.role === 'Admin';
-
-    if (!isAuthorized) {
+    if (!req.task) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to delete this task'
@@ -226,35 +268,31 @@ export const deleteTask = async (req, res) => {
 // @desc    Get dashboard stats
 // @route   GET /api/tasks/stats/dashboard
 // @access  Private
+// RBAC Rules:
+//  - Admin: can view all user stats
+//  - Others: can view own stats
 export const getDashboardStats = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Tasks assigned to user
     const assignedToMe = await Task.countDocuments({ assignedTo: userId });
-    
-    // Tasks created by user
     const createdByMe = await Task.countDocuments({ createdBy: userId });
     
-    // Completed tasks
     const completedTasks = await Task.countDocuments({ 
       assignedTo: userId,
       status: 'Completed' 
     });
     
-    // In progress tasks
     const inProgressTasks = await Task.countDocuments({ 
       assignedTo: userId,
       status: 'In Progress' 
     });
     
-    // To do tasks
     const todoTasks = await Task.countDocuments({ 
       assignedTo: userId,
       status: 'To Do' 
     });
 
-    // Overdue tasks
     const overdueTasks = await Task.countDocuments({
       assignedTo: userId,
       isOverdue: true,
