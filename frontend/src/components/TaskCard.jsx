@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, Trash2, ArrowRight, Flag } from "lucide-react";
+import { Calendar, Trash2, ArrowRight, Flag, User } from "lucide-react";
 import { useRBAC } from "../hooks/useRBAC";
 
 const statusStyles = {
@@ -117,15 +117,23 @@ export default function TaskCard({ task, onStatusChange, onDelete }) {
 
       {/* FOOTER */}
       <div className="pl-3 flex items-center justify-between">
-        {/* Due date */}
-        {task.dueDate ? (
-          <div className={`flex items-center gap-1 text-xs ${isOverdue ? "text-red-500 font-medium" : "text-gray-400"}`}>
-            <Calendar size={12} />
-            <span>{new Date(task.dueDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span>
-          </div>
-        ) : (
-          <span className="text-xs text-gray-300">No due date</span>
-        )}
+        {/* Creator & Due date */}
+        <div className="flex items-center gap-3">
+          {task.createdBy && (
+            <div className="flex items-center gap-1 text-xs text-gray-400">
+              <User size={10} />
+              <span>{task.createdBy.name || 'Unknown'}</span>
+            </div>
+          )}
+          {task.dueDate ? (
+            <div className={`flex items-center gap-1 text-xs ${isOverdue ? "text-red-500 font-medium" : "text-gray-400"}`}>
+              <Calendar size={12} />
+              <span>{new Date(task.dueDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span>
+            </div>
+          ) : (
+            <span className="text-xs text-gray-300">No due date</span>
+          )}
+        </div>
 
         {/* Cycle status button */}
         {task.status !== "Done" && (

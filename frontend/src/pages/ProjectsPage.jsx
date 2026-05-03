@@ -80,22 +80,20 @@ export default function ProjectsPage() {
              <div className="flex items-center gap-4">
                <div className="w-14 h-14 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
                  <FolderKanban size={28} className="text-white" />
-               </div>
-               <div>
-                 <p className="text-red-200 text-sm font-medium">Your workspace</p>
-                 <h1 className="text-3xl font-extrabold tracking-tight">Projects</h1>
-                 <p className="text-red-200 text-sm mt-0.5">Manage all your projects in one place</p>
-               </div>
-             </div>
-             {isAdmin && (
-               <button
-                 onClick={() => setIsOpen(true)}
-                 className="flex items-center gap-2 bg-white text-red-800 font-semibold px-5 py-2.5 rounded-xl hover:bg-red-50 active:scale-[0.97] transition-all duration-200 shadow-md self-start md:self-auto"
-               >
-                 <Plus size={18} />
-                 New Project
-               </button>
-             )}
+            </div>
+              <div>
+                <p className="text-red-200 text-sm font-medium">Your workspace</p>
+                <h1 className="text-3xl font-extrabold tracking-tight">Projects</h1>
+                <p className="text-red-200 text-sm mt-0.5">Manage all your projects in one place</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsOpen(true)}
+              className="flex items-center gap-2 bg-white text-red-800 font-semibold px-5 py-2.5 rounded-xl hover:bg-red-50 active:scale-[0.97] transition-all duration-200 shadow-md self-start md:self-auto"
+            >
+              <Plus size={18} />
+              New Project
+            </button>
            </div>
         </div>
 

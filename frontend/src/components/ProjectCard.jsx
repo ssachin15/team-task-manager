@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FolderKanban, Trash2 } from "lucide-react";
+import { FolderKanban, Trash2, User } from "lucide-react";
 import { useRBAC } from "../hooks/useRBAC";
 
 export default function ProjectCard({ project, onDelete }) {
@@ -94,6 +94,14 @@ export default function ProjectCard({ project, onDelete }) {
       {/* DESCRIPTION */}
       {project.description && (
         <p className="text-xs text-gray-400 mb-3 line-clamp-2">{project.description}</p>
+      )}
+
+      {/* OWNER INFO - Show for admins */}
+      {project.owner && (
+        <div className="flex items-center gap-1.5 mb-3 text-xs text-gray-500">
+          <User size={12} />
+          <span>{project.owner.name || 'Unknown'}</span>
+        </div>
       )}
 
       {/* TASK COUNT */}

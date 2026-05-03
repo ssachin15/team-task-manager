@@ -114,15 +114,16 @@ export default function SignupPage() {
             <label className="text-sm text-gray-600">Password</label>
             <div className="flex items-center mt-1 border border-gray-200 rounded-lg px-3 focus-within:ring-2 focus-within:ring-red-500 transition">
               <Lock size={16} className="text-gray-400" />
-              <input
-                type="password"
-                placeholder="Minimum 6 characters"
-                required
-                minLength={6}
-                className="w-full p-3 bg-transparent focus:outline-none"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-              />
+                <input
+                  type="password"
+                  placeholder="Minimum 6 characters"
+                  required
+                  minLength={6}
+                  autocomplete="new-password"
+                  className="w-full p-3 bg-transparent focus:outline-none"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                />
             </div>
           </div>
 
@@ -131,16 +132,17 @@ export default function SignupPage() {
             <label className="text-sm text-gray-600">Confirm Password</label>
             <div className="flex items-center mt-1 border border-gray-200 rounded-lg px-3 focus-within:ring-2 focus-within:ring-red-500 transition">
               <Lock size={16} className="text-gray-400" />
-              <input
-                type="password"
-                placeholder="Re-enter your password"
-                required
-                className="w-full p-3 bg-transparent focus:outline-none"
-                value={form.confirmPassword}
-                onChange={(e) =>
-                  setForm({ ...form, confirmPassword: e.target.value })
-                }
-              />
+                <input
+                  type="password"
+                  placeholder="Re-enter your password"
+                  required
+                  autocomplete="new-password"
+                  className="w-full p-3 bg-transparent focus:outline-none"
+                  value={form.confirmPassword}
+                  onChange={(e) =>
+                    setForm({ ...form, confirmPassword: e.target.value })
+                  }
+                />
             </div>
           </div>
 

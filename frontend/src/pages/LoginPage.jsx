@@ -87,14 +87,15 @@ export default function LoginPage() {
             <label className="text-sm text-gray-600">Password</label>
             <div className="flex items-center mt-1 border border-gray-200 rounded-lg px-3 focus-within:ring-2 focus-within:ring-red-500 transition">
               <Lock size={16} className="text-gray-400" />
-              <input
-                type="password"
-                placeholder="••••••••"
-                required
-                className="w-full p-3 bg-transparent focus:outline-none"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-              />
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  required
+                  autocomplete="current-password"
+                  className="w-full p-3 bg-transparent focus:outline-none"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                />
             </div>
           </div>
 
