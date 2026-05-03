@@ -12,6 +12,7 @@ const generateToken = (id) => {
 // @route   POST /api/auth/signup
 // @access  Public
 export const signup = async (req, res) => {
+  console.log('SIGNUP HIT', req.body);
   try {
     const { name, email, password, confirmPassword } = req.body;
 
@@ -71,9 +72,11 @@ export const signup = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('SIGNUP ERROR:', error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
+      stack: error.stack
     });
   }
 };
